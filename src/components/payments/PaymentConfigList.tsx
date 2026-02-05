@@ -74,9 +74,9 @@ export default function PaymentConfigList({ onEdit, onAdd }: PaymentConfigListPr
       render: (_: unknown, record: ConfigWithRelations) => {
         let value: string = '-'
         if (record.payment_method === 'epay') {
-          value = (record.config?.pid as string | undefined) || '-'
+          value = (record.config as Record<string, unknown>)?.pid as string || '-'
         } else {
-          value = (record.config?.app_id as string | undefined) || '-'
+          value = (record.config as Record<string, unknown>)?.app_id as string || '-'
         }
         return (
           <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>
