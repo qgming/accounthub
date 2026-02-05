@@ -72,7 +72,7 @@ export default function AppVersionList({ onEdit, onAdd, applicationId }: AppVers
       dataIndex: ['applications', 'name'],
       key: 'application_name',
       width: 150,
-      render: (_text: string, record: VersionWithRelations) => record.applications?.name || '-',
+      render: (_: string, record: VersionWithRelations) => record.applications?.name || '-',
     },
     {
       title: '版本号',
