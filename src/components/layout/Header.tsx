@@ -41,7 +41,12 @@ export default function Header() {
         zIndex: 1000,
       }}
     >
-      <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <img
+          src="/logo.svg"
+          alt="AccountHub Logo"
+          style={{ width: '32px', height: '32px' }}
+        />
         <Text strong style={{ fontSize: '18px' }}>
           AccountHub 管理后台
         </Text>
