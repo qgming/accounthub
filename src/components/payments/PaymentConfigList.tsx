@@ -72,11 +72,11 @@ export default function PaymentConfigList({ onEdit, onAdd }: PaymentConfigListPr
       key: 'merchant_id',
       width: 200,
       render: (_: unknown, record: ConfigWithRelations) => {
-        let value = '-'
+        let value: string = '-'
         if (record.payment_method === 'epay') {
-          value = record.config?.pid || '-'
+          value = (record.config?.pid as string | undefined) || '-'
         } else {
-          value = record.config?.app_id || '-'
+          value = (record.config?.app_id as string | undefined) || '-'
         }
         return (
           <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>

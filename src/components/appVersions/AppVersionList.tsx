@@ -1,4 +1,4 @@
-import { Table, Button, Space, Input, Modal, Switch, Tag, Typography, Select } from 'antd'
+import { Table, Button, Space, Input, Modal, Switch, Tag, Select } from 'antd'
 import { EditOutlined, DeleteOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { useAppVersions, useTogglePublished, useDeleteAppVersion } from '../../hooks/useAppVersions'
@@ -6,7 +6,6 @@ import type { AppVersion } from '../../types/database.types'
 import dayjs from 'dayjs'
 
 const { Search } = Input
-const { Text } = Typography
 
 interface AppVersionListProps {
   onEdit: (version: AppVersion) => void
@@ -63,20 +62,24 @@ export default function AppVersionList({ onEdit, onAdd, applicationId }: AppVers
     })
   }
 
+  type VersionWithRelations = AppVersion & {
+    applications?: { name: string; slug: string }
+  }
+
   const columns = [
     {
       title: '应用名称',
       dataIndex: ['applications', 'name'],
       key: 'application_name',
       width: 150,
-      render: (text: string, record: any) => record.applications?.name || '-',
+      render: (_: string, record: VersionWithRelations) => record.applications?.name || '-',
     },
     {
       title: '版本号',
       dataIndex: 'version_number',
       key: 'version_number',
       width: 120,
-      render: (text: string) => <Tag color="blue">{text}</Tag>,
+      render: (versionNumber: string) => <Tag color="blue">{versionNumber}</Tag>,
     },
     {
       title: '版本代码',
