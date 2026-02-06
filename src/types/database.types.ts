@@ -134,6 +134,97 @@ export interface AppVersion {
   created_by: string | null
 }
 
+// 兑换码类型
+export type RedemptionCodeType = 'single' | 'multiple' | 'batch'
+
+// 兑换码状态
+export type RedemptionCodeStatus = 'active' | 'expired' | 'exhausted' | 'disabled'
+
+// 兑换码接口
+export interface RedemptionCode {
+  id: string
+  code: string
+  code_type: RedemptionCodeType
+  application_id: string
+  membership_plan_id: string
+  max_uses: number
+  current_uses: number
+  valid_from: string
+  valid_until: string | null
+  is_active: boolean
+  status: RedemptionCodeStatus
+  description: string | null
+  metadata: Record<string, unknown> | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+// 兑换记录接口
+export interface RedemptionCodeUse {
+  id: string
+  redemption_code_id: string
+  user_id: string
+  membership_id: string | null
+  redeemed_at: string
+  ip_address: string | null
+  user_agent: string | null
+  metadata: Record<string, unknown> | null
+  created_at: string
+}
+
+// 配置类型枚举
+export type AppConfigType =
+  | 'announcement'      // 公告
+  | 'llm_config'        // 大模型配置
+  | 'api_config'        // API配置
+  | 'feature_flag'      // 功能开关
+  | 'custom'            // 自定义
+
+// 应用配置接口
+export interface AppConfig {
+  id: string
+  config_key: string
+  name: string
+  description: string | null
+  config_data: Record<string, any>  // JSONB字段
+  config_type: AppConfigType | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  created_by: string | null
+}
+
+// 配置模板字段类型
+export type TemplateFieldType = 'text' | 'textarea' | 'number' | 'password' | 'date' | 'select' | 'switch'
+
+// 配置模板字段定义
+export interface TemplateField {
+  key: string
+  label: string
+  type: TemplateFieldType
+  required: boolean
+  placeholder?: string
+  options?: string[]  // 用于 select 类型
+}
+
+// 配置模板接口
+export interface AppConfigTemplate {
+  id: string
+  template_name: string
+  display_name: string
+  description: string | null
+  template_fields: TemplateField[]  // JSONB字段
+  example_data: Record<string, any> | null  // JSONB字段
+  icon: string | null
+  category: string | null
+  is_active: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+  created_by: string | null
+}
+
 // 数据库类型（用于 Supabase 客户端）
 export interface Database {
   public: {
@@ -188,6 +279,26 @@ export interface Database {
         Row: AppVersion
         Insert: Omit<AppVersion, 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Omit<AppVersion, 'id' | 'created_at' | 'updated_at'>>
+      }
+      redemption_codes: {
+        Row: RedemptionCode
+        Insert: Omit<RedemptionCode, 'id' | 'created_at' | 'updated_at' | 'current_uses'>
+        Update: Partial<Omit<RedemptionCode, 'id' | 'created_at' | 'updated_at'>>
+      }
+      redemption_code_uses: {
+        Row: RedemptionCodeUse
+        Insert: Omit<RedemptionCodeUse, 'id' | 'created_at'>
+        Update: Partial<Omit<RedemptionCodeUse, 'id' | 'created_at'>>
+      }
+      app_configs: {
+        Row: AppConfig
+        Insert: Omit<AppConfig, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<AppConfig, 'id' | 'created_at' | 'updated_at'>>
+      }
+      app_config_templates: {
+        Row: AppConfigTemplate
+        Insert: Omit<AppConfigTemplate, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<AppConfigTemplate, 'id' | 'created_at' | 'updated_at'>>
       }
     }
   }

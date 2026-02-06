@@ -78,3 +78,31 @@ export const SUBSCRIPTION_STATUS_LABELS = {
   [SUBSCRIPTION_STATUS.CANCELLED]: '已取消',
   [SUBSCRIPTION_STATUS.UNPAID]: '未支付',
 }
+
+// 兑换码类型
+export const REDEMPTION_CODE_TYPE = {
+  SINGLE: 'single',
+  MULTIPLE: 'multiple',
+  BATCH: 'batch',
+} as const
+
+export const REDEMPTION_CODE_TYPE_LABELS = {
+  [REDEMPTION_CODE_TYPE.SINGLE]: '单次使用',
+  [REDEMPTION_CODE_TYPE.MULTIPLE]: '多次使用',
+  [REDEMPTION_CODE_TYPE.BATCH]: '批量生成',
+}
+
+// 兑换码状态
+export const REDEMPTION_CODE_STATUS = {
+  ACTIVE: 'active',
+  EXPIRED: 'expired',
+  EXHAUSTED: 'exhausted',
+  DISABLED: 'disabled',
+} as const
+
+export const REDEMPTION_CODE_STATUS_LABELS = {
+  [REDEMPTION_CODE_STATUS.ACTIVE]: '有效',
+  [REDEMPTION_CODE_STATUS.EXPIRED]: '已过期',
+  [REDEMPTION_CODE_STATUS.EXHAUSTED]: '已用完',
+  [REDEMPTION_CODE_STATUS.DISABLED]: '已禁用',
+}

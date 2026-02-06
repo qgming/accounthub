@@ -1,5 +1,5 @@
 import { Table, Button, Space, Input, Modal, Switch, Tag, Typography } from 'antd'
-import { EditOutlined, DeleteOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { useApplications, useToggleApplicationActive, useDeleteApplication } from '../../hooks/useApplications'
 import type { Application } from '../../types/database.types'
@@ -161,8 +161,7 @@ export default function ApplicationList({ onEdit, onAdd }: ApplicationListProps)
         <Search
           placeholder="搜索应用名称、标识符或描述"
           allowClear
-          enterButton={<SearchOutlined />}
-          style={{ width: 400 }}
+          style={{ width: 250 }}
           onSearch={setSearch}
         />
         <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>

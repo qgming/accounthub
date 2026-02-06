@@ -173,7 +173,7 @@ export default function PaymentList({ onEdit, onAdd }: PaymentListProps) {
           <Select
             placeholder="筛选状态"
             allowClear
-            style={{ width: 150 }}
+            style={{ width: 120 }}
             onChange={setStatusFilter}
           >
             <Option value="success">成功</Option>

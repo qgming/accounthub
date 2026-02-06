@@ -1,0 +1,192 @@
+/* 移动端响应式样式 */
+
+/* 移动端汉堡菜单按钮 */
+@media (max-width: 767px) {
+  .mobile-menu-button {
+    display: inline-flex !important;
+  }
+
+  /* 移动端保持标题显示，调整布局 */
+  .ant-layout-header > div:first-child {
+    flex: 1;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* 汉堡按钮固定在左侧 */
+  .mobile-menu-button {
+    position: absolute !important;
+    left: 0;
+  }
+
+  /* Logo 和标题居中 */
+  .header-logo,
+  .header-title {
+    display: inline-block !important;
+  }
+
+  .header-title {
+    font-size: 16px !important;
+  }
+
+  /* 移动端隐藏用户名 */
+  .user-name {
+    display: none !important;
+  }
+
+  /* 用户头像区域固定在右侧 */
+  .ant-layout-header > div:last-child {
+    position: absolute;
+    right: 16px;
+  }
+}
+
+/* 平板和桌面端 */
+@media (min-width: 768px) {
+  .mobile-menu-button {
+    display: none !important;
+  }
+}
+
+/* 小屏幕手机优化 */
+@media (max-width: 480px) {
+  /* 调整头部内边距 */
+  .ant-layout-header {
+    padding: 0 12px !important;
+  }
+
+  /* Logo 尺寸调整 */
+  .header-logo {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  /* 标题字体调整 */
+  .header-title {
+    font-size: 14px !important;
+  }
+
+  /* 头像尺寸调整 */
+  .ant-avatar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* 用户头像区域调整 */
+  .ant-layout-header > div:last-child {
+    right: 12px !important;
+  }
+}
+
+/* 抽屉菜单样式优化 */
+.ant-drawer-body {
+  padding: 0 !important;
+}
+
+.ant-drawer-body .ant-menu {
+  border-right: none !important;
+}
+
+/* 菜单项样式优化 */
+.ant-menu-item,
+.ant-menu-submenu-title {
+  transition: all 0.3s ease;
+}
+
+.ant-menu-item:hover,
+.ant-menu-submenu-title:hover {
+  background-color: #f0f0f0;
+}
+
+/* 选中菜单项样式 */
+.ant-menu-item-selected {
+  background-color: #e6f7ff !important;
+  color: #1890ff !important;
+}
+
+/* 菜单分组标题样式 */
+.ant-menu-item-group-title {
+  padding: 8px 16px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 平滑滚动 */
+.ant-layout-sider {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.ant-layout-sider::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.ant-layout-sider::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* 内容区域响应式优化 */
+@media (max-width: 767px) {
+  .ant-layout-content {
+    overflow-x: auto;
+  }
+
+  /* 表格在移动端的优化 */
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+
+  /* 卡片在移动端的优化 */
+  .ant-card {
+    margin-bottom: 16px;
+  }
+
+  /* 表单在移动端的优化 */
+  .ant-form-item {
+    margin-bottom: 16px;
+  }
+}
+
+/* 抽屉动画优化 */
+.ant-drawer {
+  transition: all 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+}
+
+/* 遮罩层样式 */
+.ant-drawer-mask {
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+/* 抽屉标题样式 */
+.ant-drawer-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+}
+
+.ant-drawer-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* 关闭按钮样式 */
+.ant-drawer-close {
+  color: rgba(0, 0, 0, 0.45);
+  transition: color 0.3s;
+}
+
+.ant-drawer-close:hover {
+  color: rgba(0, 0, 0, 0.75);
+}

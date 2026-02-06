@@ -1,12 +1,16 @@
-import { Layout, Avatar, Dropdown, Space, Typography } from 'antd'
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons'
+import { Layout, Avatar, Dropdown, Space, Typography, Button } from 'antd'
+import { UserOutlined, LogoutOutlined, MenuOutlined } from '@ant-design/icons'
 import { useAuth } from '../../hooks/useAuth'
 import type { MenuProps } from 'antd'
 
 const { Header: AntHeader } = Layout
 const { Text } = Typography
 
-export default function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void
+}
+
+export default function Header({ onMenuClick }: HeaderProps) {
   const { profile, signOut } = useAuth()
 
   const handleLogout = async () => {
@@ -26,7 +30,7 @@ export default function Header() {
     <AntHeader
       style={{
         background: '#fff',
-        padding: '0 24px',
+        padding: '0 16px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -41,13 +45,27 @@ export default function Header() {
         zIndex: 1000,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+        {/* 移动端汉堡菜单按钮 */}
+        <Button
+          type="text"
+          icon={<MenuOutlined />}
+          onClick={onMenuClick}
+          style={{
+            fontSize: '20px',
+            width: '40px',
+            height: '40px',
+            display: 'none',
+          }}
+          className="mobile-menu-button"
+        />
         <img
           src="/logo.svg"
           alt="AccountHub Logo"
           style={{ width: '32px', height: '32px' }}
+          className="header-logo"
         />
-        <Text strong style={{ fontSize: '18px' }}>
+        <Text strong style={{ fontSize: '18px' }} className="header-title">
           AccountHub 管理后台
         </Text>
       </div>
@@ -55,7 +73,7 @@ export default function Header() {
       <Dropdown menu={{ items: menuItems }} placement="bottomRight">
         <Space style={{ cursor: 'pointer' }}>
           <Avatar icon={<UserOutlined />} src={profile?.avatar_url} />
-          <Text>{profile?.full_name || profile?.email}</Text>
+          <Text className="user-name">{profile?.full_name || profile?.email}</Text>
         </Space>
       </Dropdown>
     </AntHeader>

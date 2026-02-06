@@ -31,31 +31,14 @@ export default function AppVersionsPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Title level={2} style={{ margin: 0 }}>应用版本管理</Title>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span>筛选应用:</span>
-          <Select
-            placeholder="全部应用"
-            allowClear
-            style={{ width: 250 }}
-            onChange={setSelectedAppId}
-            showSearch
-            optionFilterProp="children"
-          >
-            {applicationsData?.data.map((app) => (
-              <Select.Option key={app.id} value={app.id}>
-                {app.name} ({app.slug})
-              </Select.Option>
-            ))}
-          </Select>
-        </div>
-      </div>
+      <Title level={2}>应用版本管理</Title>
 
       <AppVersionList
         onEdit={handleEdit}
         onAdd={handleAdd}
         applicationId={selectedAppId}
+        onApplicationFilterChange={setSelectedAppId}
+        applicationsData={applicationsData}
       />
 
       <AppVersionForm

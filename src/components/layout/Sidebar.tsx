@@ -10,9 +10,15 @@ import {
   SettingOutlined,
   GiftOutlined,
   RocketOutlined,
+  TagOutlined,
 } from '@ant-design/icons'
 
-export default function Sidebar() {
+interface SidebarProps {
+  mode?: 'inline' | 'vertical'
+  onMenuClick?: () => void
+}
+
+export default function Sidebar({ mode = 'inline', onMenuClick }: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -52,6 +58,11 @@ export default function Sidebar() {
           icon: <RocketOutlined />,
           label: '版本管理',
         },
+        {
+          key: '/app-configs',
+          icon: <SettingOutlined />,
+          label: '应用配置',
+        },
       ],
     },
     {
@@ -68,6 +79,11 @@ export default function Sidebar() {
           key: '/membership-plans',
           icon: <GiftOutlined />,
           label: '会员套餐',
+        },
+        {
+          key: '/redemption-codes',
+          icon: <TagOutlined />,
+          label: '兑换码管理',
         },
       ],
     },
@@ -92,11 +108,13 @@ export default function Sidebar() {
 
   const handleMenuClick = ({ key }: { key: string }) => {
     navigate(key)
+    // 在移动端点击菜单项后关闭抽屉
+    onMenuClick?.()
   }
 
   return (
     <Menu
-      mode="inline"
+      mode={mode}
       selectedKeys={[location.pathname]}
       items={menuItems}
       onClick={handleMenuClick}

@@ -1,5 +1,5 @@
 import { Table, Button, Space, Input, Modal, Switch, Tag, Select } from 'antd'
-import { EditOutlined, DeleteOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { useAppVersions, useTogglePublished, useDeleteAppVersion } from '../../hooks/useAppVersions'
 import type { AppVersion } from '../../types/database.types'
@@ -11,6 +11,8 @@ interface AppVersionListProps {
   onEdit: (version: AppVersion) => void
   onAdd: () => void
   applicationId?: string
+  onApplicationFilterChange?: (appId: string | undefined) => void
+  applicationsData?: any
 }
 
 // 格式化文件大小
@@ -26,7 +28,7 @@ const formatFileSize = (bytes: number | null): string => {
   return `${size.toFixed(2)} ${units[unitIndex]}`
 }
 
-export default function AppVersionList({ onEdit, onAdd, applicationId }: AppVersionListProps) {
+export default function AppVersionList({ onEdit, onAdd, applicationId, onApplicationFilterChange, applicationsData }: AppVersionListProps) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [search, setSearch] = useState('')
@@ -183,23 +185,39 @@ export default function AppVersionList({ onEdit, onAdd, applicationId }: AppVers
 
   return (
     <div>
-      <div style={{ marginBottom: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <Search
-          placeholder="搜索版本号或更新内容"
-          allowClear
-          enterButton={<SearchOutlined />}
-          style={{ width: 300 }}
-          onSearch={setSearch}
-        />
-        <Select
-          placeholder="筛选发布状态"
-          allowClear
-          style={{ width: 150 }}
-          onChange={setPublishedFilter}
-        >
-          <Select.Option value={true}>已发布</Select.Option>
-          <Select.Option value={false}>未发布</Select.Option>
-        </Select>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Space>
+          <Search
+            placeholder="搜索版本号或更新内容"
+            allowClear
+            style={{ width: 250 }}
+            onSearch={setSearch}
+          />
+          <Select
+            placeholder="筛选应用"
+            allowClear
+            style={{ width: 120 }}
+            onChange={onApplicationFilterChange}
+            value={applicationId}
+            showSearch
+            optionFilterProp="children"
+          >
+            {applicationsData?.data.map((app: any) => (
+              <Select.Option key={app.id} value={app.id}>
+                {app.name}
+              </Select.Option>
+            ))}
+          </Select>
+          <Select
+            placeholder="筛选发布状态"
+            allowClear
+            style={{ width: 120 }}
+            onChange={setPublishedFilter}
+          >
+            <Select.Option value={true}>已发布</Select.Option>
+            <Select.Option value={false}>未发布</Select.Option>
+          </Select>
+        </Space>
         <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>
           新增版本
         </Button>

@@ -1,9 +1,12 @@
-import { Table, Button, Space, Tag, Modal } from 'antd'
+import { Table, Button, Space, Tag, Modal, Select } from 'antd'
 import { EditOutlined, DeleteOutlined, PlusOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { useMembershipPlans, useDeleteMembershipPlan, useUpdatePlanOrder } from '../../hooks/useMembershipPlans'
-import type { MembershipPlan } from '../../types/database.types'
+import { useApplications } from '../../hooks/useApplications'
+import type { MembershipPlan, Application } from '../../types/database.types'
 import dayjs from 'dayjs'
+
+const { Option } = Select
 
 interface MembershipPlanListProps {
   onEdit: (plan: MembershipPlan) => void
@@ -13,8 +16,12 @@ interface MembershipPlanListProps {
 export default function MembershipPlanList({ onEdit, onAdd }: MembershipPlanListProps) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [applicationFilter, setApplicationFilter] = useState<string>()
 
-  const { data, isLoading } = useMembershipPlans(page, pageSize)
+  const { data, isLoading } = useMembershipPlans(page, pageSize, {
+    applicationId: applicationFilter,
+  })
+  const { data: applicationsData } = useApplications(1, 100)
   const deletePlan = useDeleteMembershipPlan()
   const updateOrder = useUpdatePlanOrder()
 
@@ -188,7 +195,18 @@ export default function MembershipPlanList({ onEdit, onAdd }: MembershipPlanList
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <div></div>
+        <Select
+          placeholder="筛选应用"
+          allowClear
+          style={{ width: 120 }}
+          onChange={setApplicationFilter}
+        >
+          {applicationsData?.data.map((app: Application) => (
+            <Option key={app.id} value={app.id}>
+              {app.name}
+            </Option>
+          ))}
+        </Select>
         <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>
           新增会员套餐
         </Button>

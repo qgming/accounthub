@@ -1,5 +1,5 @@
 import { Table, Button, Space, Input, Modal, Tag, Select } from 'antd'
-import { EditOutlined, SearchOutlined, StopOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { EditOutlined, StopOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { useUsers, useToggleBanUser } from '../../hooks/useUsers'
 import { useApplications } from '../../hooks/useApplications'
@@ -122,14 +122,13 @@ export default function UserList({ onEdit }: UserListProps) {
         <Search
           placeholder="搜索邮箱或姓名"
           allowClear
-          enterButton={<SearchOutlined />}
-          style={{ width: 300 }}
+          style={{ width: 250 }}
           onSearch={setSearch}
         />
         <Select
           placeholder="筛选注册应用"
           allowClear
-          style={{ width: 200 }}
+          style={{ width: 120 }}
           onChange={setApplicationFilter}
         >
           {applicationsData?.data.map((app: Application) => (

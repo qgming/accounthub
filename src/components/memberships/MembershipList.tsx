@@ -211,7 +211,7 @@ export default function MembershipList({ onEdit, onAdd }: MembershipListProps) {
           <Select
             placeholder="筛选应用"
             allowClear
-            style={{ width: 200 }}
+            style={{ width: 120 }}
             onChange={setApplicationFilter}
           >
             {applicationsData?.data.map((app: Application) => (
@@ -223,7 +223,7 @@ export default function MembershipList({ onEdit, onAdd }: MembershipListProps) {
           <Select
             placeholder="筛选状态"
             allowClear
-            style={{ width: 150 }}
+            style={{ width: 120 }}
             onChange={setStatusFilter}
           >
             <Option value="active">正式会员</Option>
