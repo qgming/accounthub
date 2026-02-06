@@ -32,7 +32,7 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
         if (template) {
           setSelectedTemplate(template)
           // 将日期字符串转换为 dayjs 对象
-          template.template_fields.forEach(field => {
+          template.template_fields.forEach((field: TemplateField) => {
             if (field.type === 'date' && configData[field.key]) {
               configData[field.key] = dayjs(configData[field.key])
             }
@@ -69,7 +69,7 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
       if (template.example_data) {
         const exampleData = { ...template.example_data }
         // 将日期字符串转换为 dayjs 对象
-        template.template_fields.forEach(field => {
+        template.template_fields.forEach((field: TemplateField) => {
           if (field.type === 'date' && exampleData[field.key]) {
             exampleData[field.key] = dayjs(exampleData[field.key])
           }

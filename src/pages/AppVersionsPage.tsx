@@ -1,4 +1,4 @@
-import { Typography, Select } from 'antd'
+import { Typography } from 'antd'
 import { useState } from 'react'
 import AppVersionList from '../components/appVersions/AppVersionList'
 import AppVersionForm from '../components/appVersions/AppVersionForm'

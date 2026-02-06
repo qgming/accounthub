@@ -2,7 +2,7 @@ import { Modal, Form, Input, Select, Switch, Button, Space, InputNumber } from '
 import { useEffect } from 'react'
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { useCreateAppConfigTemplate, useUpdateAppConfigTemplate } from '../../hooks/useAppConfigTemplates'
-import type { AppConfigTemplate, TemplateFieldType } from '../../types/database.types'
+import type { AppConfigTemplate } from '../../types/database.types'
 
 const { TextArea } = Input
 

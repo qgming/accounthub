@@ -97,7 +97,7 @@ export const redemptionCodesService = {
     const codeData: RedemptionCodeInsert = {
       ...code,
       code: code.auto_generate ? generateCode() : code.code,
-      created_by: user?.id,
+      created_by: user?.id || null,
     }
 
     // 移除 auto_generate 字段
@@ -126,7 +126,7 @@ export const redemptionCodesService = {
       codes.push({
         ...template,
         code: generateCode(),
-        created_by: user?.id,
+        created_by: user?.id || null,
       })
     }
 
@@ -229,21 +229,36 @@ export const redemptionCodesService = {
 
     const [totalResult, activeResult, expiredResult, exhaustedResult] = await Promise.all([
       query,
-      supabase
-        .from('redemption_codes')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'active')
-        .then((r) => (applicationId ? r.eq('application_id', applicationId) : r)),
-      supabase
-        .from('redemption_codes')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'expired')
-        .then((r) => (applicationId ? r.eq('application_id', applicationId) : r)),
-      supabase
-        .from('redemption_codes')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'exhausted')
-        .then((r) => (applicationId ? r.eq('application_id', applicationId) : r)),
+      (async () => {
+        let activeQuery = supabase
+          .from('redemption_codes')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'active')
+        if (applicationId) {
+          activeQuery = activeQuery.eq('application_id', applicationId)
+        }
+        return activeQuery
+      })(),
+      (async () => {
+        let expiredQuery = supabase
+          .from('redemption_codes')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'expired')
+        if (applicationId) {
+          expiredQuery = expiredQuery.eq('application_id', applicationId)
+        }
+        return expiredQuery
+      })(),
+      (async () => {
+        let exhaustedQuery = supabase
+          .from('redemption_codes')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'exhausted')
+        if (applicationId) {
+          exhaustedQuery = exhaustedQuery.eq('application_id', applicationId)
+        }
+        return exhaustedQuery
+      })(),
     ])
 
     return {
