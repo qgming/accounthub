@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Select, Switch, Button, Space, InputNumber, Card, Divider } from 'antd'
+import { Modal, Form, Input, Select, Switch, Button, Space, InputNumber, Card } from 'antd'
 import { useEffect } from 'react'
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { useCreateAppConfigTemplate, useUpdateAppConfigTemplate } from '../../hooks/useAppConfigTemplates'
