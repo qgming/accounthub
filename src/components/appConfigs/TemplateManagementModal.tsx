@@ -60,7 +60,7 @@ export default function TemplateManagementModal({ open, onClose }: TemplateManag
       title: '字段数量',
       key: 'field_count',
       width: 100,
-      render: (_: any, record: AppConfigTemplate) => (
+      render: (_: unknown, record: AppConfigTemplate) => (
         <span>{record.template_fields.length}</span>
       ),
     },
@@ -87,7 +87,7 @@ export default function TemplateManagementModal({ open, onClose }: TemplateManag
       key: 'action',
       width: 150,
       fixed: 'right' as const,
-      render: (_: any, record: AppConfigTemplate) => (
+      render: (_: unknown, record: AppConfigTemplate) => (
         <Space size="small">
           <Button
             type="link"

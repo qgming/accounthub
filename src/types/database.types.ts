@@ -196,7 +196,17 @@ export interface AppConfig {
 }
 
 // 配置模板字段类型
-export type TemplateFieldType = 'text' | 'textarea' | 'number' | 'password' | 'date' | 'select' | 'switch'
+export type TemplateFieldType = 'text' | 'textarea' | 'number' | 'password' | 'date' | 'select' | 'switch' | 'array'
+
+// 数组字段的子字段定义
+export interface ArraySubField {
+  key: string
+  label: string
+  type: Exclude<TemplateFieldType, 'array'>  // 数组子字段不能再嵌套数组
+  required: boolean
+  placeholder?: string
+  options?: string[]  // 用于 select 类型
+}
 
 // 配置模板字段定义
 export interface TemplateField {
@@ -206,6 +216,7 @@ export interface TemplateField {
   required: boolean
   placeholder?: string
   options?: string[]  // 用于 select 类型
+  arrayFields?: ArraySubField[]  // 用于 array 类型,定义数组对象的字段结构
 }
 
 // 配置模板接口

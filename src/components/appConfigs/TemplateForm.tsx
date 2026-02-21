@@ -1,4 +1,4 @@
-import { Modal, Form, Input, Select, Switch, Button, Space, InputNumber } from 'antd'
+import { Modal, Form, Input, Select, Switch, Button, Space, InputNumber, Card, Divider } from 'antd'
 import { useEffect } from 'react'
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { useCreateAppConfigTemplate, useUpdateAppConfigTemplate } from '../../hooks/useAppConfigTemplates'
@@ -115,8 +115,18 @@ export default function TemplateForm({ open, template, onClose }: TemplateFormPr
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
-                  <div key={key} style={{ marginBottom: 16, padding: 12, border: '1px solid #d9d9d9', borderRadius: 4 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+                  <Card
+                    key={key}
+                    size="small"
+                    style={{ marginBottom: 16 }}
+                    extra={
+                      <MinusCircleOutlined
+                        onClick={() => remove(name)}
+                        style={{ color: '#ff4d4f', cursor: 'pointer' }}
+                      />
+                    }
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       <Space style={{ width: '100%' }}>
                         <Form.Item
                           {...restField}
@@ -124,7 +134,7 @@ export default function TemplateForm({ open, template, onClose }: TemplateFormPr
                           rules={[{ required: true, message: '请输入字段键名' }]}
                           style={{ marginBottom: 0, flex: 1 }}
                         >
-                          <Input placeholder="字段键名（如：title）" />
+                          <Input placeholder="字段键名（如：sources）" />
                         </Form.Item>
                         <Form.Item
                           {...restField}
@@ -132,9 +142,8 @@ export default function TemplateForm({ open, template, onClose }: TemplateFormPr
                           rules={[{ required: true, message: '请输入字段标签' }]}
                           style={{ marginBottom: 0, flex: 1 }}
                         >
-                          <Input placeholder="字段标签（如：标题）" />
+                          <Input placeholder="字段标签（如：RSS 源列表）" />
                         </Form.Item>
-                        <MinusCircleOutlined onClick={() => remove(name)} style={{ color: '#ff4d4f' }} />
                       </Space>
                       <Space style={{ width: '100%' }}>
                         <Form.Item
@@ -153,6 +162,7 @@ export default function TemplateForm({ open, template, onClose }: TemplateFormPr
                               { label: '日期', value: 'date' },
                               { label: '下拉选择', value: 'select' },
                               { label: '开关', value: 'switch' },
+                              { label: '数组对象', value: 'array' },
                             ]}
                           />
                         </Form.Item>
@@ -172,16 +182,132 @@ export default function TemplateForm({ open, template, onClose }: TemplateFormPr
                           <Input placeholder="占位符文本" />
                         </Form.Item>
                       </Space>
+
+                      {/* 下拉选择的选项 */}
                       <Form.Item
-                        {...restField}
-                        name={[name, 'options']}
-                        style={{ marginBottom: 0 }}
-                        extra="仅用于下拉选择类型，多个选项用逗号分隔"
+                        noStyle
+                        shouldUpdate={(prevValues, currentValues) =>
+                          prevValues.template_fields?.[name]?.type !== currentValues.template_fields?.[name]?.type
+                        }
                       >
-                        <Input placeholder="选项（如：low,medium,high）" />
+                        {({ getFieldValue }) =>
+                          getFieldValue(['template_fields', name, 'type']) === 'select' ? (
+                            <Form.Item
+                              {...restField}
+                              name={[name, 'options']}
+                              style={{ marginBottom: 0 }}
+                              extra="多个选项用逗号分隔"
+                            >
+                              <Input placeholder="选项（如：low,medium,high）" />
+                            </Form.Item>
+                          ) : null
+                        }
+                      </Form.Item>
+
+                      {/* 数组类型的子字段定义 */}
+                      <Form.Item
+                        noStyle
+                        shouldUpdate={(prevValues, currentValues) =>
+                          prevValues.template_fields?.[name]?.type !== currentValues.template_fields?.[name]?.type
+                        }
+                      >
+                        {({ getFieldValue }) =>
+                          getFieldValue(['template_fields', name, 'type']) === 'array' ? (
+                            <div style={{ marginTop: 8, padding: 12, background: '#fafafa', borderRadius: 4 }}>
+                              <div style={{ marginBottom: 8, fontWeight: 500 }}>数组对象字段定义</div>
+                              <Form.List name={[name, 'arrayFields']}>
+                                {(subFields, { add: addSub, remove: removeSub }) => (
+                                  <>
+                                    {subFields.map(({ key: subKey, name: subName, ...subRestField }) => (
+                                      <div
+                                        key={subKey}
+                                        style={{
+                                          marginBottom: 8,
+                                          padding: 8,
+                                          background: '#fff',
+                                          border: '1px solid #d9d9d9',
+                                          borderRadius: 4,
+                                        }}
+                                      >
+                                        <Space style={{ width: '100%', marginBottom: 4 }}>
+                                          <Form.Item
+                                            {...subRestField}
+                                            name={[subName, 'key']}
+                                            rules={[{ required: true, message: '键名' }]}
+                                            style={{ marginBottom: 0, width: 120 }}
+                                          >
+                                            <Input placeholder="键名（如：id）" size="small" />
+                                          </Form.Item>
+                                          <Form.Item
+                                            {...subRestField}
+                                            name={[subName, 'label']}
+                                            rules={[{ required: true, message: '标签' }]}
+                                            style={{ marginBottom: 0, flex: 1 }}
+                                          >
+                                            <Input placeholder="标签（如：源标识）" size="small" />
+                                          </Form.Item>
+                                          <MinusCircleOutlined
+                                            onClick={() => removeSub(subName)}
+                                            style={{ color: '#ff4d4f', cursor: 'pointer' }}
+                                          />
+                                        </Space>
+                                        <Space style={{ width: '100%' }}>
+                                          <Form.Item
+                                            {...subRestField}
+                                            name={[subName, 'type']}
+                                            rules={[{ required: true, message: '类型' }]}
+                                            style={{ marginBottom: 0, width: 120 }}
+                                          >
+                                            <Select
+                                              placeholder="类型"
+                                              size="small"
+                                              options={[
+                                                { label: '文本', value: 'text' },
+                                                { label: '多行文本', value: 'textarea' },
+                                                { label: '数字', value: 'number' },
+                                                { label: '密码', value: 'password' },
+                                                { label: '日期', value: 'date' },
+                                                { label: '下拉选择', value: 'select' },
+                                                { label: '开关', value: 'switch' },
+                                              ]}
+                                            />
+                                          </Form.Item>
+                                          <Form.Item
+                                            {...subRestField}
+                                            name={[subName, 'required']}
+                                            valuePropName="checked"
+                                            style={{ marginBottom: 0 }}
+                                          >
+                                            <Switch size="small" checkedChildren="必填" unCheckedChildren="可选" />
+                                          </Form.Item>
+                                          <Form.Item
+                                            {...subRestField}
+                                            name={[subName, 'placeholder']}
+                                            style={{ marginBottom: 0, flex: 1 }}
+                                          >
+                                            <Input placeholder="占位符" size="small" />
+                                          </Form.Item>
+                                        </Space>
+                                      </div>
+                                    ))}
+                                    <Button
+                                      type="dashed"
+                                      onClick={() => addSub()}
+                                      block
+                                      size="small"
+                                      icon={<PlusOutlined />}
+                                    >
+                                      添加子字段
+                                    </Button>
+                                  </>
+                                )}
+                              </Form.List>
+                            </div>
+                          ) : null
+                        }
                       </Form.Item>
                     </div>
-                  </div>
+                  </Card>
                 ))}
                 <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
                   添加字段

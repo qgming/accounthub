@@ -1,9 +1,9 @@
-import { Modal, Form, Input, Select, Switch, Button, Space, InputNumber, DatePicker, message } from 'antd'
+import { Modal, Form, Input, Select, Switch, Button, Space, InputNumber, DatePicker, message, Card } from 'antd'
 import { useEffect, useState, useRef } from 'react'
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined, DownloadOutlined } from '@ant-design/icons'
 import { useCreateAppConfig, useUpdateAppConfig } from '../../hooks/useAppConfigs'
 import { useAppConfigTemplates } from '../../hooks/useAppConfigTemplates'
-import type { AppConfig, AppConfigTemplate, TemplateField } from '../../types/database.types'
+import type { AppConfig, AppConfigTemplate, TemplateField, ArraySubField } from '../../types/database.types'
 import dayjs from 'dayjs'
 
 const { TextArea } = Input
@@ -264,6 +264,32 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
     }
   }
 
+  // 渲染数组子字段
+  const renderArraySubField = (subField: ArraySubField) => {
+    const commonProps = {
+      placeholder: subField.placeholder,
+    }
+
+    switch (subField.type) {
+      case 'textarea':
+        return <TextArea rows={2} {...commonProps} />
+      case 'number':
+        return <InputNumber style={{ width: '100%' }} {...commonProps} />
+      case 'password':
+        return <Input.Password {...commonProps} />
+      case 'date':
+        return <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
+      case 'select':
+        return (
+          <Select {...commonProps} options={subField.options?.map(opt => ({ label: opt, value: opt }))} />
+        )
+      case 'switch':
+        return <Switch checkedChildren="是" unCheckedChildren="否" />
+      default:
+        return <Input {...commonProps} />
+    }
+  }
+
   // 渲染模板字段
   const renderTemplateField = (field: TemplateField) => {
     const commonProps = {
@@ -285,6 +311,9 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
         )
       case 'switch':
         return <Switch checkedChildren="是" unCheckedChildren="否" />
+      case 'array':
+        // 数组类型使用 Form.List 渲染
+        return null  // 在外层单独处理
       default:
         return <Input {...commonProps} />
     }
@@ -363,17 +392,100 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
                 </Button>
               </Space>
             </div>
-            {selectedTemplate.template_fields.map((field) => (
-              <Form.Item
-                key={field.key}
-                label={field.label}
-                name={['config_data', field.key]}
-                rules={[{ required: field.required, message: `请输入${field.label}` }]}
-                valuePropName={field.type === 'switch' ? 'checked' : 'value'}
-              >
-                {renderTemplateField(field)}
-              </Form.Item>
-            ))}
+            {selectedTemplate.template_fields.map((field) => {
+              // 数组类型字段单独处理
+              if (field.type === 'array' && field.arrayFields) {
+                return (
+                  <Form.Item
+                    key={field.key}
+                    label={field.label}
+                    required={field.required}
+                  >
+                    <Form.List name={['config_data', field.key]}>
+                      {(fields, { add, remove }) => (
+                        <>
+                          {fields.map(({ key, name, ...restField }) => (
+                            <Form.Item
+                              key={key}
+                              noStyle
+                              shouldUpdate={(prevValues, currentValues) => {
+                                const prevItem = prevValues?.config_data?.[field.key]?.[name]
+                                const currItem = currentValues?.config_data?.[field.key]?.[name]
+                                return prevItem?.icon !== currItem?.icon ||
+                                       prevItem?.title !== currItem?.title ||
+                                       prevItem?.name !== currItem?.name
+                              }}
+                            >
+                              {({ getFieldValue }) => {
+                                const currentItem = getFieldValue(['config_data', field.key, name]) || {}
+                                const icon = currentItem.icon || ''
+                                const title = currentItem.title || currentItem.name || `项目 ${name + 1}`
+
+                                return (
+                                  <Card
+                                    size="small"
+                                    style={{ marginBottom: 12 }}
+                                    title={
+                                      <span style={{ fontSize: '14px', fontWeight: 500 }}>
+                                        {icon && <span style={{ marginRight: 8, fontSize: '16px' }}>{icon}</span>}
+                                        {title}
+                                      </span>
+                                    }
+                                    extra={
+                                      <MinusCircleOutlined
+                                        onClick={() => remove(name)}
+                                        style={{ color: '#ff4d4f', cursor: 'pointer' }}
+                                      />
+                                    }
+                                  >
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                                      {field.arrayFields!.map((subField) => (
+                                        <Form.Item
+                                          key={subField.key}
+                                          {...restField}
+                                          label={subField.label}
+                                          name={[name, subField.key]}
+                                          rules={[{ required: subField.required, message: `请输入${subField.label}` }]}
+                                          valuePropName={subField.type === 'switch' ? 'checked' : 'value'}
+                                          style={{ marginBottom: 8 }}
+                                        >
+                                          {renderArraySubField(subField)}
+                                        </Form.Item>
+                                      ))}
+                                    </div>
+                                  </Card>
+                                )
+                              }}
+                            </Form.Item>
+                          ))}
+                          <Button
+                            type="dashed"
+                            onClick={() => add()}
+                            block
+                            icon={<PlusOutlined />}
+                          >
+                            添加{field.label}项
+                          </Button>
+                        </>
+                      )}
+                    </Form.List>
+                  </Form.Item>
+                )
+              }
+
+              // 普通字段
+              return (
+                <Form.Item
+                  key={field.key}
+                  label={field.label}
+                  name={['config_data', field.key]}
+                  rules={[{ required: field.required, message: `请输入${field.label}` }]}
+                  valuePropName={field.type === 'switch' ? 'checked' : 'value'}
+                >
+                  {renderTemplateField(field)}
+                </Form.Item>
+              )
+            })}
           </>
         ) : (
           // 自定义配置：使用键值对列表
