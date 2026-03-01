@@ -33,7 +33,7 @@ export const useAppVersion = (id: string) => {
 export const useLatestVersion = (applicationId: string, platform: string) => {
   return useQuery({
     queryKey: ['latestVersion', applicationId, platform],
-    queryFn: () => appVersionsService.getLatestVersion(applicationId, platform),
+    queryFn: () => appVersionsService.getLatestVersion(applicationId),
     enabled: !!applicationId && !!platform,
   })
 }

@@ -4,7 +4,7 @@ import { MinusCircleOutlined, PlusOutlined, UploadOutlined, DownloadOutlined, Lo
 import { useCreateAppConfig, useUpdateAppConfig } from '../../hooks/useAppConfigs'
 import { useAppConfigTemplates } from '../../hooks/useAppConfigTemplates'
 import { useApplications } from '../../hooks/useApplications'
-import { deriveKey, encryptConfigData, isConfigDataEncrypted } from '../../utils/crypto'
+import { deriveKey, encryptConfigData, isConfigDataEncrypted, decryptConfigData } from '../../utils/crypto'
 import type { AppConfig, AppConfigTemplate, TemplateField, ArraySubField } from '../../types/database.types'
 import dayjs from 'dayjs'
 
@@ -144,8 +144,21 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
 
   useEffect(() => {
     if (open && config) {
-      // 编辑模式：将 config_data 对象转换为表单值，处理日期字段
-      const configData = { ...config.config_data }
+      // 编辑模式：若数据已加密则先解密，再转换为表单值
+      let rawConfigData = { ...config.config_data }
+
+      if (isConfigDataEncrypted(rawConfigData)) {
+        // 查找关联应用以获取 app_key 用于解密
+        const selectedApp = applicationsData?.data?.find((a) => a.id === config.application_id)
+        if (selectedApp) {
+          try {
+            const decKey = deriveKey(selectedApp.app_key, selectedApp.id)
+            rawConfigData = decryptConfigData(rawConfigData, decKey) as typeof rawConfigData
+          } catch (e) {
+            console.error('解密失败:', e)
+          }
+        }
+      }
 
       // 如果有模板，转换日期字段
       let template: AppConfigTemplate | null = null
@@ -154,8 +167,8 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
         if (template) {
           // 将日期字符串转换为 dayjs 对象
           template.template_fields.forEach((field: TemplateField) => {
-            if (field.type === 'date' && configData[field.key]) {
-              configData[field.key] = dayjs(configData[field.key])
+            if (field.type === 'date' && rawConfigData[field.key]) {
+              rawConfigData[field.key] = dayjs(rawConfigData[field.key] as string)
             }
           })
         }
@@ -166,11 +179,11 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
         // 模板模式：直接设置 config_data
         form.setFieldsValue({
           ...config,
-          config_data: configData,
+          config_data: rawConfigData,
         })
       } else {
         // 自定义模式：将 config_data 转换为 config_data_list 数组
-        const configDataList = Object.entries(configData).map(([key, value]) => ({
+        const configDataList = Object.entries(rawConfigData).map(([key, value]) => ({
           key,
           value: String(value)
         }))
@@ -192,7 +205,7 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
       })
       setSelectedTemplate(null)
     }
-  }, [open, config, form, templates])
+  }, [open, config, form, templates, applicationsData?.data])
 
   const handleTemplateChange = (templateName: string) => {
     if (!templateName) {
@@ -353,11 +366,11 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
         {/* 编辑已加密配置时的提示 */}
         {isEditingEncrypted && (
           <Alert
-            type="warning"
+            type="info"
             icon={<LockOutlined />}
             showIcon
-            message="该配置数据已加密"
-            description="修改并保存后，将使用所选关联应用的密钥重新加密。请重新填写所有配置参数字段。"
+            message="该配置数据已自动解密"
+            description="当前显示的是解密后的内容。保存后将使用关联应用的密钥重新加密存储。"
             style={{ marginBottom: 16 }}
           />
         )}

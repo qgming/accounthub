@@ -40,3 +40,28 @@ export function encryptConfigData(
 export function isConfigDataEncrypted(configData: Record<string, unknown>): boolean {
   return typeof configData._enc === 'string' && configData._enc.startsWith(ENC_PREFIX)
 }
+
+/**
+ * 解密 config_data 对象
+ * 输入含 _enc 字段的包装对象，返回原始配置对象
+ * 格式：{ _enc: "enc:v1:<hex(nonce)>.<hex(ciphertext+authTag)>" }
+ */
+export function decryptConfigData(
+  configData: Record<string, unknown>,
+  key: Uint8Array
+): Record<string, unknown> {
+  const enc = configData._enc as string
+  if (!enc.startsWith(ENC_PREFIX)) {
+    throw new Error('不是有效的加密数据格式')
+  }
+  const payload = enc.slice(ENC_PREFIX.length)
+  const dotIndex = payload.indexOf('.')
+  if (dotIndex === -1) {
+    throw new Error('加密数据格式错误：缺少分隔符')
+  }
+  const nonce = hexToBytes(payload.slice(0, dotIndex))
+  const ciphertext = hexToBytes(payload.slice(dotIndex + 1))
+  const aes = gcm(key, nonce)
+  const plaintext = aes.decrypt(ciphertext)
+  return JSON.parse(bytesToUtf8(plaintext)) as Record<string, unknown>
+}

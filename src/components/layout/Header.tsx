@@ -68,6 +68,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <Text strong style={{ fontSize: '18px' }} className="header-title">
           AccountHub 管理后台
         </Text>
+        <Text style={{ fontSize: '12px', color: '#999' }} className="header-version">
+          v26.3.1
+        </Text>
       </div>
 
       <Dropdown menu={{ items: menuItems }} placement="bottomRight">
