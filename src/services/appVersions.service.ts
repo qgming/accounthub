@@ -1,5 +1,6 @@
 import { supabase } from '../config/supabase'
 import type { AppVersion } from '../types/database.types'
+import { isValidUUID, ValidationError } from '../utils/validation'
 
 export const appVersionsService = {
   // 获取所有版本（分页）
@@ -8,11 +9,15 @@ export const appVersionsService = {
     pageSize = 10,
     filters?: {
       applicationId?: string
-      platform?: string
       isPublished?: boolean
       search?: string
     }
   ) {
+    // 验证 applicationId
+    if (filters?.applicationId && !isValidUUID(filters.applicationId)) {
+      throw new ValidationError('无效的应用ID格式')
+    }
+
     let query = supabase
       .from('app_versions')
       .select('*, applications(name, slug)', { count: 'exact' })
@@ -22,9 +27,7 @@ export const appVersionsService = {
     if (filters?.applicationId) {
       query = query.eq('application_id', filters.applicationId)
     }
-    if (filters?.platform) {
-      query = query.eq('platform', filters.platform)
-    }
+    // 注意：数据库 app_versions 表不含 platform 字段，已移除平台筛选
     if (filters?.isPublished !== undefined) {
       query = query.eq('is_published', filters.isPublished)
     }
@@ -51,6 +54,10 @@ export const appVersionsService = {
 
   // 获取单个版本
   async getAppVersion(id: string) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的版本ID格式')
+    }
+
     const { data, error } = await supabase
       .from('app_versions')
       .select('*, applications(name, slug)')
@@ -61,34 +68,23 @@ export const appVersionsService = {
     return data
   },
 
-  // 获取最新版本（供应用端使用）
-  async getLatestVersion(applicationId: string, platform: string) {
+  // 获取最新版本（供应用端使用，数据库无 platform 字段，返回最新已发布版本）
+  async getLatestVersion(applicationId: string) {
+    if (!isValidUUID(applicationId)) {
+      throw new ValidationError('无效的应用ID格式')
+    }
+
     const { data, error } = await supabase
       .from('app_versions')
       .select('*')
       .eq('application_id', applicationId)
-      .eq('platform', platform)
       .eq('is_published', true)
       .order('version_code', { ascending: false })
       .limit(1)
       .single()
 
     if (error) {
-      // 如果没有找到特定平台的版本，尝试查找 'all' 平台的版本
-      if (error.code === 'PGRST116') {
-        const { data: allPlatformData, error: allPlatformError } = await supabase
-          .from('app_versions')
-          .select('*')
-          .eq('application_id', applicationId)
-          .eq('platform', 'all')
-          .eq('is_published', true)
-          .order('version_code', { ascending: false })
-          .limit(1)
-          .single()
-
-        if (allPlatformError) throw allPlatformError
-        return allPlatformData
-      }
+      if (error.code === 'PGRST116') return null
       throw error
     }
     return data
@@ -115,6 +111,10 @@ export const appVersionsService = {
 
   // 更新版本信息
   async updateAppVersion(id: string, updates: Partial<AppVersion>) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的版本ID格式')
+    }
+
     const { data, error } = await supabase
       .from('app_versions')
       .update(updates)
@@ -128,6 +128,10 @@ export const appVersionsService = {
 
   // 删除版本
   async deleteAppVersion(id: string) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的版本ID格式')
+    }
+
     const { error } = await supabase.from('app_versions').delete().eq('id', id)
 
     if (error) throw error

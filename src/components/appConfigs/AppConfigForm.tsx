@@ -1,8 +1,10 @@
-import { Modal, Form, Input, Select, Switch, Button, Space, InputNumber, DatePicker, message, Card } from 'antd'
+import { Modal, Form, Input, Select, Switch, Button, Space, InputNumber, DatePicker, message, Card, Alert } from 'antd'
 import { useEffect, useState, useRef } from 'react'
-import { MinusCircleOutlined, PlusOutlined, UploadOutlined, DownloadOutlined } from '@ant-design/icons'
+import { MinusCircleOutlined, PlusOutlined, UploadOutlined, DownloadOutlined, LockOutlined } from '@ant-design/icons'
 import { useCreateAppConfig, useUpdateAppConfig } from '../../hooks/useAppConfigs'
 import { useAppConfigTemplates } from '../../hooks/useAppConfigTemplates'
+import { useApplications } from '../../hooks/useApplications'
+import { deriveKey, encryptConfigData, isConfigDataEncrypted } from '../../utils/crypto'
 import type { AppConfig, AppConfigTemplate, TemplateField, ArraySubField } from '../../types/database.types'
 import dayjs from 'dayjs'
 
@@ -19,8 +21,12 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
   const createConfig = useCreateAppConfig()
   const updateConfig = useUpdateAppConfig()
   const { data: templates } = useAppConfigTemplates()
+  const { data: applicationsData } = useApplications(1, 100)
   const [selectedTemplate, setSelectedTemplate] = useState<AppConfigTemplate | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // 编辑模式下，检测原始 config_data 是否已加密
+  const isEditingEncrypted = config != null && isConfigDataEncrypted(config.config_data)
 
   // 导出配置参数为 JSON 文件
   const handleExportConfig = () => {
@@ -238,12 +244,21 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
         })
       }
 
+      // 使用关联应用的 app_key 加密 config_data
+      const selectedApp = applicationsData?.data?.find((a) => a.id === values.application_id)
+      if (!selectedApp) {
+        message.error('未找到关联应用，请重新选择')
+        return
+      }
+      const encKey = deriveKey(selectedApp.app_key, selectedApp.id)
+      const encryptedConfigData = encryptConfigData(configData, encKey)
+
       // 构建 payload，排除 config_data_list
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { config_data_list, ...restValues } = values
       const payload = {
         ...restValues,
-        config_data: configData,
+        config_data: encryptedConfigData,
         config_type: selectedTemplate?.template_name || values.config_type,
       }
 
@@ -335,6 +350,30 @@ export default function AppConfigForm({ open, config, onClose }: AppConfigFormPr
         layout="vertical"
         autoComplete="off"
       >
+        {/* 编辑已加密配置时的提示 */}
+        {isEditingEncrypted && (
+          <Alert
+            type="warning"
+            icon={<LockOutlined />}
+            showIcon
+            message="该配置数据已加密"
+            description="修改并保存后，将使用所选关联应用的密钥重新加密。请重新填写所有配置参数字段。"
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
+        <Form.Item
+          label="关联应用"
+          name="application_id"
+          rules={[{ required: true, message: '请选择关联应用' }]}
+          extra="配置数据将使用该应用的密钥加密存储"
+        >
+          <Select
+            placeholder="请选择关联应用"
+            options={applicationsData?.data?.map((a) => ({ label: a.name, value: a.id }))}
+          />
+        </Form.Item>
+
         <Form.Item
           label="配置名称"
           name="name"

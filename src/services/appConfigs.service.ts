@@ -1,5 +1,6 @@
 import { supabase } from '../config/supabase'
 import type { AppConfig } from '../types/database.types'
+import { isValidUUID, ValidationError } from '../utils/validation'
 
 export const appConfigsService = {
   // 获取所有配置（分页+搜索+筛选）
@@ -49,6 +50,10 @@ export const appConfigsService = {
 
   // 获取单个配置
   async getAppConfig(id: string) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的配置ID格式')
+    }
+
     const { data, error } = await supabase
       .from('app_configs')
       .select('*')
@@ -91,6 +96,10 @@ export const appConfigsService = {
 
   // 更新配置
   async updateAppConfig(id: string, updates: Partial<AppConfig>) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的配置ID格式')
+    }
+
     const { data, error } = await supabase
       .from('app_configs')
       .update(updates)
@@ -104,6 +113,10 @@ export const appConfigsService = {
 
   // 删除配置
   async deleteAppConfig(id: string) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的配置ID格式')
+    }
+
     const { error } = await supabase
       .from('app_configs')
       .delete()
@@ -114,6 +127,10 @@ export const appConfigsService = {
 
   // 切换激活状态
   async toggleActive(id: string, isActive: boolean) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的配置ID格式')
+    }
+
     const { data, error } = await supabase
       .from('app_configs')
       .update({ is_active: isActive })

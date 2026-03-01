@@ -187,8 +187,9 @@ export interface AppConfig {
   config_key: string
   name: string
   description: string | null
-  config_data: Record<string, any>  // JSONB字段
+  config_data: Record<string, any>  // JSONB字段，加密时存储 { _enc: "enc:v1:..." }
   config_type: AppConfigType | null
+  application_id: string | null     // 关联应用ID，加密密钥与该应用的 app_key 绑定
   is_active: boolean
   created_at: string
   updated_at: string

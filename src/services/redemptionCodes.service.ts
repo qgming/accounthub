@@ -1,18 +1,20 @@
 import { supabase } from '../config/supabase'
 import type { Database } from '../types/database.types'
+import { customAlphabet } from 'nanoid'
+import { isValidUUID, ValidationError } from '../utils/validation'
+import { auditService } from './audit.service'
+import { authService } from './auth.service'
 
 type RedemptionCodeInsert = Database['public']['Tables']['redemption_codes']['Insert']
 type RedemptionCodeUpdate = Database['public']['Tables']['redemption_codes']['Update']
 
-// 生成随机兑换码
-function generateCode(length = 16): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // 去除易混淆字符I、O、0、1
-  let code = ''
-  for (let i = 0; i < length; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  // 格式化为 XXXX-XXXX-XXXX-XXXX
-  return code.match(/.{1,4}/g)?.join('-') || code
+// 使用 nanoid 生成兑换码，去除易混淆字符 I、O、0、1
+const generateNanoid = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 16)
+
+// 生成格式化兑换码（XXXX-XXXX-XXXX-XXXX）
+function generateCode(): string {
+  const raw = generateNanoid()
+  return raw.match(/.{1,4}/g)?.join('-') || raw
 }
 
 export const redemptionCodesService = {
@@ -72,6 +74,10 @@ export const redemptionCodesService = {
 
   // 获取单个兑换码
   async getRedemptionCode(id: string) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的兑换码ID格式')
+    }
+
     const { data, error } = await supabase
       .from('redemption_codes')
       .select(
@@ -112,6 +118,25 @@ export const redemptionCodesService = {
       .single()
 
     if (error) throw error
+
+    // 记录审计日志
+    try {
+      if (user) {
+        const admin = await authService.getAdmin(user.id)
+        if (admin && data) {
+          await auditService.logAction({
+            admin_id: admin.id,
+            action: 'CREATE_REDEMPTION_CODE',
+            resource_type: 'redemption_code',
+            resource_id: data.id,
+            new_data: { code: data.code, application_id: data.application_id },
+          })
+        }
+      }
+    } catch (auditError) {
+      console.error('Failed to log audit:', auditError)
+    }
+
     return data
   },
 
@@ -138,6 +163,10 @@ export const redemptionCodesService = {
 
   // 更新兑换码
   async updateRedemptionCode(id: string, updates: RedemptionCodeUpdate) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的兑换码ID格式')
+    }
+
     const { data, error } = await supabase
       .from('redemption_codes')
       .update(updates)
@@ -146,11 +175,36 @@ export const redemptionCodesService = {
       .single()
 
     if (error) throw error
+
+    // 记录审计日志（禁用操作使用特定 action 标识）
+    try {
+      const currentUser = await authService.getCurrentUser()
+      if (currentUser) {
+        const admin = await authService.getAdmin(currentUser.id)
+        if (admin && data) {
+          const action = updates.status === 'disabled' ? 'DISABLE_REDEMPTION_CODE' : 'UPDATE_REDEMPTION_CODE'
+          await auditService.logAction({
+            admin_id: admin.id,
+            action,
+            resource_type: 'redemption_code',
+            resource_id: id,
+            new_data: { updates },
+          })
+        }
+      }
+    } catch (auditError) {
+      console.error('Failed to log audit:', auditError)
+    }
+
     return data
   },
 
   // 删除兑换码
   async deleteRedemptionCode(id: string) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的兑换码ID格式')
+    }
+
     const { error } = await supabase.from('redemption_codes').delete().eq('id', id)
 
     if (error) throw error
@@ -158,6 +212,9 @@ export const redemptionCodesService = {
 
   // 获取兑换码使用记录
   async getRedemptionCodeUses(codeId: string, page = 1, pageSize = 10) {
+    if (!isValidUUID(codeId)) {
+      throw new ValidationError('无效的兑换码ID格式')
+    }
     let query = supabase
       .from('redemption_code_uses')
       .select(

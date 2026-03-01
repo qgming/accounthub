@@ -1,5 +1,6 @@
 import { supabase } from '../config/supabase'
 import type { PaymentHistory } from '../types/database.types'
+import { isValidUUID, ValidationError } from '../utils/validation'
 
 export const paymentsService = {
   // 获取所有支付历史（分页）
@@ -8,6 +9,14 @@ export const paymentsService = {
     membershipId?: string
     status?: string
   }) {
+    // 验证筛选参数中的 UUID
+    if (filters?.userId && !isValidUUID(filters.userId)) {
+      throw new ValidationError('无效的用户ID格式')
+    }
+    if (filters?.membershipId && !isValidUUID(filters.membershipId)) {
+      throw new ValidationError('无效的会员ID格式')
+    }
+
     let query = supabase
       .from('payment_history')
       .select(`
@@ -51,6 +60,10 @@ export const paymentsService = {
 
   // 获取单个支付记录
   async getPayment(id: string) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的支付记录ID格式')
+    }
+
     const { data, error } = await supabase
       .from('payment_history')
       .select(`
@@ -83,6 +96,10 @@ export const paymentsService = {
 
   // 更新支付记录
   async updatePayment(id: string, updates: Partial<PaymentHistory>) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的支付记录ID格式')
+    }
+
     const { data, error } = await supabase
       .from('payment_history')
       .update(updates)
@@ -96,6 +113,10 @@ export const paymentsService = {
 
   // 删除支付记录
   async deletePayment(id: string) {
+    if (!isValidUUID(id)) {
+      throw new ValidationError('无效的支付记录ID格式')
+    }
+
     const { error } = await supabase
       .from('payment_history')
       .delete()

@@ -19,7 +19,7 @@ export const MEMBERSHIP_STATUS_LABELS = {
   [MEMBERSHIP_STATUS.EXPIRED]: '已过期',
 }
 
-// 支付状态
+// 支付状态（对应 user_app_memberships.payment_status 字段）
 export const PAYMENT_STATUS = {
   PAID: 'paid',
   PENDING: 'pending',
@@ -32,6 +32,21 @@ export const PAYMENT_STATUS_LABELS = {
   [PAYMENT_STATUS.PENDING]: '待支付',
   [PAYMENT_STATUS.FAILED]: '支付失败',
   [PAYMENT_STATUS.REFUNDED]: '已退款',
+}
+
+// 支付历史状态（对应 payment_history.status 字段，注意与 PAYMENT_STATUS 不同）
+export const PAYMENT_HISTORY_STATUS = {
+  SUCCESS: 'success',
+  PENDING: 'pending',
+  FAILED: 'failed',
+  REFUNDED: 'refunded',
+} as const
+
+export const PAYMENT_HISTORY_STATUS_LABELS = {
+  [PAYMENT_HISTORY_STATUS.SUCCESS]: '支付成功',
+  [PAYMENT_HISTORY_STATUS.PENDING]: '待支付',
+  [PAYMENT_HISTORY_STATUS.FAILED]: '支付失败',
+  [PAYMENT_HISTORY_STATUS.REFUNDED]: '已退款',
 }
 
 // 计费周期

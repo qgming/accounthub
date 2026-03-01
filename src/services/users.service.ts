@@ -82,9 +82,9 @@ export const usersService = {
           await auditService.logAction({
             admin_id: admin.id,
             action: 'UPDATE_USER',
-            target_user_id: id,
-            target_user_email: data.email || '',
-            details: { updates }
+            resource_type: 'user',
+            resource_id: id,
+            new_data: { updates }
           })
         }
       }
@@ -120,9 +120,9 @@ export const usersService = {
           await auditService.logAction({
             admin_id: admin.id,
             action: isBanned ? 'BAN_USER' : 'UNBAN_USER',
-            target_user_id: id,
-            target_user_email: data.email || '',
-            details: { is_banned: isBanned, reason: '管理员操作' }
+            resource_type: 'user',
+            resource_id: id,
+            new_data: { is_banned: isBanned }
           })
         }
       }

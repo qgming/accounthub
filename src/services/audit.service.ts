@@ -2,16 +2,21 @@ import { supabase } from '../config/supabase'
 import { isValidUUID, ValidationError } from '../utils/validation'
 
 /**
- * Audit service for logging administrative actions
+ * 审计日志服务 - 记录管理员操作
+ * 对应数据库 admin_audit_logs 表字段：
+ * id, admin_id, action, resource_type, resource_id,
+ * old_data, new_data, ip_address, user_agent, created_at
  */
 
 export interface AuditLogEntry {
   admin_id: string
   action: string
-  target_user_id?: string
-  target_user_email?: string
-  details?: Record<string, unknown>
+  resource_type: string
+  resource_id?: string
+  old_data?: Record<string, unknown>
+  new_data?: Record<string, unknown>
   ip_address?: string
+  user_agent?: string
 }
 
 /**
@@ -36,9 +41,9 @@ export const auditService = {
       throw new ValidationError('无效的管理员ID格式')
     }
 
-    // Validate target_user_id if provided
-    if (entry.target_user_id && !isValidUUID(entry.target_user_id)) {
-      throw new ValidationError('无效的目标用户ID格式')
+    // Validate resource_id if provided
+    if (entry.resource_id && !isValidUUID(entry.resource_id)) {
+      throw new ValidationError('无效的资源ID格式')
     }
 
     try {
@@ -47,10 +52,12 @@ export const auditService = {
         .insert({
           admin_id: entry.admin_id,
           action: entry.action,
-          target_user_id: entry.target_user_id || null,
-          target_user_email: entry.target_user_email || null,
-          details: entry.details || null,
+          resource_type: entry.resource_type,
+          resource_id: entry.resource_id || null,
+          old_data: entry.old_data || null,
+          new_data: entry.new_data || null,
           ip_address: entry.ip_address || null,
+          user_agent: entry.user_agent || null,
         })
 
       if (error) {
@@ -72,6 +79,7 @@ export const auditService = {
   async getLogs(options?: {
     adminId?: string
     action?: string
+    resourceType?: string
     limit?: number
     offset?: number
   }) {
@@ -92,6 +100,11 @@ export const auditService = {
       // Filter by action if provided
       if (options?.action) {
         query = query.eq('action', options.action)
+      }
+
+      // Filter by resource_type if provided
+      if (options?.resourceType) {
+        query = query.eq('resource_type', options.resourceType)
       }
 
       // Apply pagination
@@ -120,25 +133,25 @@ export const auditService = {
   },
 
   /**
-   * Get audit logs for a specific user
-   * @throws {ValidationError} If userId is invalid
+   * Get audit logs for a specific resource
+   * @throws {ValidationError} If resourceId is invalid
    * @throws {AuditError} If fetching fails
    */
-  async getLogsByTargetUser(userId: string, limit = 50) {
-    if (!isValidUUID(userId)) {
-      throw new ValidationError('无效的用户ID格式')
+  async getLogsByResource(resourceId: string, limit = 50) {
+    if (!isValidUUID(resourceId)) {
+      throw new ValidationError('无效的资源ID格式')
     }
 
     try {
       const { data, error } = await supabase
         .from('admin_audit_logs')
         .select('*')
-        .eq('target_user_id', userId)
+        .eq('resource_id', resourceId)
         .order('created_at', { ascending: false })
         .limit(Math.min(limit, 100))
 
       if (error) {
-        throw new AuditError(`获取用户审计日志失败: ${error.message}`)
+        throw new AuditError(`获取资源审计日志失败: ${error.message}`)
       }
 
       return data || []
@@ -146,7 +159,7 @@ export const auditService = {
       if (error instanceof ValidationError || error instanceof AuditError) {
         throw error
       }
-      throw new AuditError('获取用户审计日志过程中发生错误')
+      throw new AuditError('获取资源审计日志过程中发生错误')
     }
   },
 
