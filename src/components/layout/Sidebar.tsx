@@ -11,6 +11,7 @@ import {
   GiftOutlined,
   RocketOutlined,
   TagOutlined,
+  RobotOutlined,
 } from '@ant-design/icons'
 
 interface SidebarProps {
@@ -62,6 +63,18 @@ export default function Sidebar({ mode = 'inline', onMenuClick }: SidebarProps) 
           key: '/app-configs',
           icon: <SettingOutlined />,
           label: '应用配置',
+        },
+      ],
+    },
+    {
+      key: 'ai-group',
+      label: 'AI 管理',
+      type: 'group' as const,
+      children: [
+        {
+          key: '/model-configs',
+          icon: <RobotOutlined />,
+          label: '模型配置',
         },
       ],
     },

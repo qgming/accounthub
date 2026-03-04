@@ -22,12 +22,16 @@ export default function DashboardPage() {
         <RevenueChart />
 
         {/* 收入统计和最近活动 */}
-        <Row gutter={16}>
+        <Row gutter={16} align="stretch">
           <Col xs={24} lg={12}>
-            <RevenueStats />
+            <div style={{ height: '100%' }}>
+              <RevenueStats />
+            </div>
           </Col>
           <Col xs={24} lg={12}>
-            <RecentActivity />
+            <div style={{ height: '100%' }}>
+              <RecentActivity />
+            </div>
           </Col>
         </Row>
       </Space>

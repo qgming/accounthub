@@ -15,6 +15,7 @@ import PaymentConfigsPage from './pages/PaymentConfigsPage'
 import MembershipPlansPage from './pages/MembershipPlansPage'
 import RedemptionCodesPage from './pages/RedemptionCodesPage'
 import AppConfigsPage from './pages/AppConfigsPage'
+import ModelConfigsPage from './pages/ModelConfigsPage'
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
               <Route path="applications" element={<ApplicationsPage />} />
               <Route path="app-versions" element={<AppVersionsPage />} />
               <Route path="app-configs" element={<AppConfigsPage />} />
+              <Route path="model-configs" element={<ModelConfigsPage />} />
               <Route path="memberships" element={<MembershipsPage />} />
               <Route path="membership-plans" element={<MembershipPlansPage />} />
               <Route path="redemption-codes" element={<RedemptionCodesPage />} />

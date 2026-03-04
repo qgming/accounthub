@@ -1,5 +1,37 @@
 // 数据库表类型定义
 
+// AI 供应商类型
+export type AiProvider = 'openai' | 'deepseek' | 'siliconflow' | 'xiaomimimo' | 'anthropic' | 'azure' | 'custom'
+
+// AI 模型额外默认参数
+export interface AiExtraConfig {
+  temperature?: number
+  max_tokens?: number
+  top_p?: number
+  frequency_penalty?: number
+  presence_penalty?: number
+}
+
+// AI 模型配置接口（前端类型，查询时不 select api_key）
+export interface AiModelConfig {
+  id: string
+  model_key: string
+  name: string
+  description: string | null
+  provider: AiProvider
+  base_url: string
+  // api_key 明文存储在数据库，RLS 保护客户端无法读取
+  // 查询列表时不 select 此字段，编辑时仅显示"已设置"提示
+  api_key?: string
+  model: string
+  application_id: string | null
+  extra_config: AiExtraConfig
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  created_by: string | null
+}
+
 // 管理员类型
 export interface Admin {
   id: string
@@ -22,6 +54,7 @@ export interface User {
   registered_from_app_id: string | null
   created_at: string
   updated_at: string
+  last_active_at?: string | null  // 由客户端 SDK trackActive() 上报
 }
 
 // 保留 Profile 类型以兼容旧代码（已废弃，请使用 User）

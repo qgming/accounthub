@@ -74,7 +74,7 @@ export default function RevenueStats() {
   ]
 
   return (
-    <Card title="应用收入排行" loading={isLoading}>
+    <Card title="应用收入排行" loading={isLoading} style={{ height: '100%' }}>
       <Table
         columns={columns}
         dataSource={revenueByApp}

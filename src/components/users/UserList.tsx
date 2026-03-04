@@ -7,7 +7,6 @@ import type { User, Application } from '../../types/database.types'
 import dayjs from 'dayjs'
 
 const { Search } = Input
-const { Option } = Select
 
 interface UserListProps {
   onEdit: (user: User) => void
@@ -82,6 +81,16 @@ export default function UserList({ onEdit }: UserListProps) {
       ),
     },
     {
+      title: '最近在线',
+      dataIndex: 'last_active_at',
+      key: 'last_active_at',
+      width: 180,
+      render: (text: string | null) =>
+        text
+          ? dayjs(text).format('YYYY-MM-DD HH:mm:ss')
+          : <span style={{ color: '#ccc' }}>从未在线</span>,
+    },
+    {
       title: '创建时间',
       dataIndex: 'created_at',
       key: 'created_at',
@@ -130,13 +139,11 @@ export default function UserList({ onEdit }: UserListProps) {
           allowClear
           style={{ width: 120 }}
           onChange={setApplicationFilter}
-        >
-          {applicationsData?.data.map((app: Application) => (
-            <Option key={app.id} value={app.id}>
-              {app.name}
-            </Option>
-          ))}
-        </Select>
+          options={(applicationsData?.data || []).map((app: Application) => ({
+            label: app.name,
+            value: app.id,
+          }))}
+        />
       </div>
 
       <Table
