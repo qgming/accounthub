@@ -66,7 +66,11 @@ export const BILLING_INTERVAL_LABELS = {
 export const PAYMENT_METHOD = {
   STRIPE: 'stripe',
   ALIPAY: 'alipay',
-  WECHAT: 'wechat',
+  WXPAY: 'wxpay',
+  QQPAY: 'qqpay',
+  BANK: 'bank',
+  JDPAY: 'jdpay',
+  PAYPAL: 'paypal',
   MANUAL: 'manual',
   EPAY: 'epay', // 易支付兼容接口（支持易支付、CodePay、VPay等）
 } as const
@@ -74,7 +78,11 @@ export const PAYMENT_METHOD = {
 export const PAYMENT_METHOD_LABELS = {
   [PAYMENT_METHOD.STRIPE]: 'Stripe',
   [PAYMENT_METHOD.ALIPAY]: '支付宝',
-  [PAYMENT_METHOD.WECHAT]: '微信支付',
+  [PAYMENT_METHOD.WXPAY]: '微信支付',
+  [PAYMENT_METHOD.QQPAY]: 'QQ钱包',
+  [PAYMENT_METHOD.BANK]: '网银支付',
+  [PAYMENT_METHOD.JDPAY]: '京东支付',
+  [PAYMENT_METHOD.PAYPAL]: 'PayPal',
   [PAYMENT_METHOD.MANUAL]: '手动',
   [PAYMENT_METHOD.EPAY]: '易支付',
 }

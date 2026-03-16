@@ -139,7 +139,7 @@ export interface MembershipPlan {
 export interface PaymentConfig {
   id: string
   application_id: string | null
-  payment_method: 'alipay' | 'wechat' | 'stripe' | 'manual' | 'epay'
+  payment_method: 'alipay' | 'wxpay' | 'qqpay' | 'bank' | 'jdpay' | 'paypal' | 'stripe' | 'manual' | 'epay'
   config: Record<string, unknown>
   is_active: boolean
   is_sandbox: boolean

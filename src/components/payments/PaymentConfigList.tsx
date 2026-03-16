@@ -1,9 +1,10 @@
 import { Table, Button, Space, Tag, Modal } from 'antd'
-import { EditOutlined, DeleteOutlined, PlusOutlined, AlipayCircleOutlined, DollarOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, PlusOutlined, AlipayCircleOutlined, DollarOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { usePaymentConfigs, useDeletePaymentConfig } from '../../hooks/usePaymentConfigs'
 import { PAYMENT_METHOD_LABELS } from '../../config/constants'
 import type { PaymentConfig } from '../../types/database.types'
+import PaymentTestModal from './PaymentTestModal'
 import dayjs from 'dayjs'
 
 interface PaymentConfigListProps {
@@ -14,6 +15,8 @@ interface PaymentConfigListProps {
 export default function PaymentConfigList({ onEdit, onAdd }: PaymentConfigListProps) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [testModalOpen, setTestModalOpen] = useState(false)
+  const [testingConfig, setTestingConfig] = useState<PaymentConfig | null>(null)
 
   const { data, isLoading } = usePaymentConfigs(page, pageSize)
   const deleteConfig = useDeletePaymentConfig()
@@ -31,6 +34,11 @@ export default function PaymentConfigList({ onEdit, onAdd }: PaymentConfigListPr
       okType: 'danger',
       onOk: () => deleteConfig.mutate(config.id),
     })
+  }
+
+  const handleTest = (config: PaymentConfig) => {
+    setTestingConfig(config)
+    setTestModalOpen(true)
   }
 
   const getPaymentMethodIcon = (method: string) => {
@@ -132,6 +140,14 @@ export default function PaymentConfigList({ onEdit, onAdd }: PaymentConfigListPr
           <Button
             type="link"
             size="small"
+            icon={<ExperimentOutlined />}
+            onClick={() => handleTest(record)}
+          >
+            测试
+          </Button>
+          <Button
+            type="link"
+            size="small"
             danger
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record)}
@@ -168,6 +184,15 @@ export default function PaymentConfigList({ onEdit, onAdd }: PaymentConfigListPr
             setPage(newPage)
             setPageSize(newPageSize)
           },
+        }}
+      />
+
+      <PaymentTestModal
+        open={testModalOpen}
+        config={testingConfig}
+        onClose={() => {
+          setTestModalOpen(false)
+          setTestingConfig(null)
         }}
       />
     </div>

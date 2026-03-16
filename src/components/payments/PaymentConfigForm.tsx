@@ -24,8 +24,13 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
   useEffect(() => {
     if (open) {
       if (config) {
+        // 判断是否是易支付渠道（包含 api_url 字段）
+        const isEpayChannel = config.config?.api_url ? true : false
+
         form.setFieldsValue({
           ...config,
+          // 如果是易支付渠道，设置 payment_method 为 epay，type 为实际的支付方式
+          payment_method: isEpayChannel ? PAYMENT_METHOD.EPAY : config.payment_method,
           // 将 JSONB config 字段展开
           app_id: config.config?.app_id || '',
           gateway: config.config?.gateway || '',
@@ -35,9 +40,11 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
           api_url: config.config?.api_url || '',
           pid: config.config?.pid || '',
           key: config.config?.key || '',
-          type: config.config?.type || 'epay',
+          type: isEpayChannel ? config.payment_method : (config.config?.type || 'alipay'),
+          // 微信支付相关字段
           mch_id: config.config?.mch_id || '',
           api_key: config.config?.api_key || '',
+          trade_type: config.config?.trade_type || 'NATIVE',
           publishable_key: config.config?.publishable_key || '',
           secret_key: config.config?.secret_key || '',
         })
@@ -58,36 +65,40 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
       const values = await form.validateFields()
 
       // 构建 config JSONB 对象
-      const configJson: Record<string, string> = {
-        app_id: values.app_id,
-        gateway: values.gateway,
-        private_key: values.private_key,
-        public_key: values.public_key,
-      }
+      const configJson: Record<string, string> = {}
 
       // 易支付配置
       if (values.payment_method === PAYMENT_METHOD.EPAY) {
         configJson.api_url = values.api_url
         configJson.pid = values.pid
         configJson.key = values.key
-        configJson.type = values.type || 'epay'
+        configJson.type = values.type || 'alipay'
       }
-
+      // 支付宝配置
+      else if (values.payment_method === PAYMENT_METHOD.ALIPAY) {
+        configJson.app_id = values.app_id
+        configJson.gateway = values.gateway
+        configJson.private_key = values.private_key
+        configJson.public_key = values.public_key
+      }
       // 微信支付配置
-      if (values.payment_method === PAYMENT_METHOD.WECHAT) {
+      else if (values.payment_method === PAYMENT_METHOD.WXPAY) {
+        configJson.app_id = values.app_id
         configJson.mch_id = values.mch_id
         configJson.api_key = values.api_key
+        configJson.trade_type = values.trade_type || 'NATIVE'
       }
 
-      // Stripe 配置
-      if (values.payment_method === PAYMENT_METHOD.STRIPE) {
-        configJson.publishable_key = values.publishable_key
-        configJson.secret_key = values.secret_key
+      // 确定最终的支付方式
+      // 如果选择的是易支付，则根据支付类型来设置 payment_method
+      let finalPaymentMethod = values.payment_method
+      if (values.payment_method === PAYMENT_METHOD.EPAY && values.type) {
+        finalPaymentMethod = values.type
       }
 
       const payload = {
         application_id: values.application_id,
-        payment_method: values.payment_method,
+        payment_method: finalPaymentMethod,
         config: configJson,
         is_active: values.is_active,
         is_sandbox: values.is_sandbox,
@@ -155,8 +166,7 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
         >
           <Select placeholder="选择支付方式">
             <Option value={PAYMENT_METHOD.ALIPAY}>{PAYMENT_METHOD_LABELS[PAYMENT_METHOD.ALIPAY]}</Option>
-            <Option value={PAYMENT_METHOD.WECHAT}>{PAYMENT_METHOD_LABELS[PAYMENT_METHOD.WECHAT]}</Option>
-            <Option value={PAYMENT_METHOD.STRIPE}>{PAYMENT_METHOD_LABELS[PAYMENT_METHOD.STRIPE]}</Option>
+            <Option value={PAYMENT_METHOD.WXPAY}>{PAYMENT_METHOD_LABELS[PAYMENT_METHOD.WXPAY]}</Option>
             <Option value={PAYMENT_METHOD.EPAY}>{PAYMENT_METHOD_LABELS[PAYMENT_METHOD.EPAY]}</Option>
           </Select>
         </Form.Item>
@@ -205,50 +215,48 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
           </>
         )}
 
-        {paymentMethod === PAYMENT_METHOD.WECHAT && (
+        {paymentMethod === PAYMENT_METHOD.WXPAY && (
           <>
             <Form.Item
-              label="App ID"
+              label="应用 ID"
               name="app_id"
-              rules={[{ required: true, message: '请输入 App ID' }]}
+              rules={[{ required: true, message: '请输入应用 ID' }]}
+              extra="微信开放平台分配的应用 AppID"
             >
-              <Input placeholder="请输入微信 App ID" />
+              <Input placeholder="请输入应用 ID（如：wx1234567890abcdef）" />
             </Form.Item>
 
             <Form.Item
               label="商户号"
               name="mch_id"
               rules={[{ required: true, message: '请输入商户号' }]}
+              extra="微信支付分配的商户号"
             >
-              <Input placeholder="请输入微信商户号" />
+              <Input placeholder="请输入商户号（如：1234567890）" />
             </Form.Item>
 
             <Form.Item
               label="API 密钥"
               name="api_key"
               rules={[{ required: true, message: '请输入 API 密钥' }]}
+              extra="商户平台设置的 API 密钥，用于签名验证"
             >
-              <Input.Password placeholder="请输入 API 密钥" />
-            </Form.Item>
-          </>
-        )}
-
-        {paymentMethod === PAYMENT_METHOD.STRIPE && (
-          <>
-            <Form.Item
-              label="Publishable Key"
-              name="publishable_key"
-              rules={[{ required: true, message: '请输入 Publishable Key' }]}
-            >
-              <Input placeholder="pk_test_..." />
+              <Input.Password placeholder="请输入 API 密钥（32 位字符）" />
             </Form.Item>
 
             <Form.Item
-              label="Secret Key"
-              name="secret_key"
-              rules={[{ required: true, message: '请输入 Secret Key' }]}
+              label="交易类型"
+              name="trade_type"
+              rules={[{ required: true, message: '请选择交易类型' }]}
+              extra="支付场景类型"
+              initialValue="NATIVE"
             >
-              <Input.Password placeholder="sk_test_..." />
+              <Select placeholder="选择交易类型">
+                <Option value="NATIVE">扫码支付（NATIVE）</Option>
+                <Option value="JSAPI">公众号支付（JSAPI）</Option>
+                <Option value="APP">APP 支付</Option>
+                <Option value="MWEB">H5 支付</Option>
+              </Select>
             </Form.Item>
           </>
         )}
@@ -286,13 +294,16 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
               label="支付类型"
               name="type"
               rules={[{ required: true, message: '请选择支付类型' }]}
-              extra="选择易支付的支付类型：支付宝、微信或易支付"
-              initialValue="epay"
+              extra="选择易支付的支付渠道类型"
+              initialValue="alipay"
             >
               <Select placeholder="选择支付类型">
-                <Option value="epay">易支付</Option>
                 <Option value="alipay">支付宝</Option>
                 <Option value="wxpay">微信支付</Option>
+                <Option value="qqpay">QQ钱包</Option>
+                <Option value="bank">网银支付</Option>
+                <Option value="jdpay">京东支付</Option>
+                <Option value="paypal">PayPal</Option>
               </Select>
             </Form.Item>
           </>
