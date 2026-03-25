@@ -1,7 +1,6 @@
-import { Modal, Form, Input, Select, Switch, Button, InputNumber, message, Collapse, Space, Tooltip } from 'antd'
-import { EyeOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Modal, Form, Input, Select, Switch, Button, InputNumber, message, Collapse, Space } from 'antd'
 import { useState } from 'react'
-import { useCreateAiModelConfig, useUpdateAiModelConfig, useGetAiModelConfigApiKey } from '../../hooks/useAiModelConfigs'
+import { useCreateAiModelConfig, useUpdateAiModelConfig } from '../../hooks/useAiModelConfigs'
 import { useApplications } from '../../hooks/useApplications'
 import type { AiModelConfig, AiProvider } from '../../types/database.types'
 
@@ -41,28 +40,14 @@ function ModelConfigFormInner({ config, onClose }: { config: AiModelConfig | nul
   const [form] = Form.useForm()
   const createConfig = useCreateAiModelConfig()
   const updateConfig = useUpdateAiModelConfig()
-  const getApiKey = useGetAiModelConfigApiKey()
   const { data: applicationsData } = useApplications(1, 100)
   // 所有 state 在挂载时从 config 派生初始值，无需 effect
   const [selectedProvider, setSelectedProvider] = useState<AiProvider>(initialProvider)
   const [apiKeyChanged, setApiKeyChanged] = useState(false)
-  const [revealedApiKey, setRevealedApiKey] = useState<string | null>(null)
 
   const handleProviderChange = (provider: AiProvider) => {
     setSelectedProvider(provider)
     form.setFieldValue('base_url', PROVIDER_DEFAULT_URLS[provider])
-  }
-
-  const handleRevealApiKey = async () => {
-    if (!config?.id) return
-    try {
-      const key = await getApiKey.mutateAsync(config.id)
-      setRevealedApiKey(key)
-      form.setFieldValue('api_key', key)
-      setApiKeyChanged(false)
-    } catch {
-      // 错误由 hook 统一提示
-    }
   }
 
   const handleSubmit = async () => {
@@ -111,9 +96,7 @@ function ModelConfigFormInner({ config, onClose }: { config: AiModelConfig | nul
   const apiKeyExtra = isEditing
     ? apiKeyChanged
       ? '将保存新的 API Key'
-      : revealedApiKey
-        ? '当前显示的是已存储的 API Key，修改后将更新'
-        : '已设置 API Key，点击眼睛图标可查看，如需修改请直接输入新值'
+      : '已设置 API Key，留空则保持不变，如需修改请直接输入新值'
     : undefined
 
   return (
@@ -207,37 +190,19 @@ function ModelConfigFormInner({ config, onClose }: { config: AiModelConfig | nul
       {/* API Key */}
       <Form.Item
         name="api_key"
-        label={
-          isEditing ? (
-            <Space size={4}>
-              <span>API Key</span>
-              <Tooltip title={revealedApiKey ? '已显示当前 API Key' : '点击查看已存储的 API Key'}>
-                <Button
-                  type="link"
-                  size="small"
-                  icon={getApiKey.isPending ? <LoadingOutlined /> : <EyeOutlined />}
-                  onClick={handleRevealApiKey}
-                  disabled={getApiKey.isPending}
-                  style={{ padding: 0, height: 'auto', fontSize: 13 }}
-                >
-                  查看
-                </Button>
-              </Tooltip>
-            </Space>
-          ) : 'API Key'
-        }
+        label="API Key"
         rules={isEditing ? [] : [{ required: true, message: '请输入 API Key' }]}
         extra={apiKeyExtra}
       >
         <Input.Password
           placeholder={
-            isEditing && !apiKeyChanged && !revealedApiKey
+            isEditing && !apiKeyChanged
               ? '留空则保持原有 API Key 不变'
               : '请输入 API Key'
           }
           onChange={(e) => {
             const newVal = e.target.value
-            setApiKeyChanged(revealedApiKey !== null ? newVal !== revealedApiKey : !!newVal)
+            setApiKeyChanged(!!newVal)
           }}
         />
       </Form.Item>

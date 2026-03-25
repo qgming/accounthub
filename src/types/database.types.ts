@@ -12,7 +12,7 @@ export interface AiExtraConfig {
   presence_penalty?: number
 }
 
-// AI 模型配置接口（前端类型，查询时不 select api_key）
+// AI 模型配置接口（前端类型，查询时不返回 api_key 明文）
 export interface AiModelConfig {
   id: string
   model_key: string
@@ -20,8 +20,7 @@ export interface AiModelConfig {
   description: string | null
   provider: AiProvider
   base_url: string
-  // api_key 明文存储在数据库，RLS 保护客户端无法读取
-  // 查询列表时不 select 此字段，编辑时仅显示"已设置"提示
+  // api_key 明文存储在数据库，前端仅允许写入或覆盖，不提供明文回显
   api_key?: string
   model: string
   application_id: string | null
@@ -103,6 +102,9 @@ export interface PaymentHistory {
   invoice_url: string | null
   paid_at: string | null
   created_at: string
+  application_id: string | null
+  metadata: Record<string, unknown> | null
+  session_id?: string | null
 }
 
 export interface AdminAuditLog {

@@ -127,22 +127,6 @@ export const aiModelConfigsService = {
     return data as AiModelConfig
   },
 
-  // 查看单条记录的明文 api_key（仅管理员可用，用于编辑页"眼睛"功能）
-  async getApiKey(id: string): Promise<string> {
-    if (!isValidUUID(id)) {
-      throw new ValidationError('无效的配置ID格式')
-    }
-
-    const { data, error } = await supabase
-      .from('ai_model_configs')
-      .select('api_key')
-      .eq('id', id)
-      .single()
-
-    if (error) throw error
-    return (data as { api_key: string }).api_key
-  },
-
   // 删除模型配置
   async deleteAiModelConfig(id: string) {
     if (!isValidUUID(id)) {

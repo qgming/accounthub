@@ -74,15 +74,6 @@ export const useDeleteAiModelConfig = () => {
   })
 }
 
-export const useGetAiModelConfigApiKey = () => {
-  return useMutation({
-    mutationFn: (id: string) => aiModelConfigsService.getApiKey(id),
-    onError: (error: Error) => {
-      message.error(`获取 API Key 失败: ${error.message}`)
-    },
-  })
-}
-
 export const useToggleAiModelConfigActive = () => {
   const queryClient = useQueryClient()
 
