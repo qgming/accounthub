@@ -55,6 +55,11 @@ function generateEpaySign(params: Record<string, string>, key: string): string {
     .map(k => `${k}=${filteredParams[k]}`)
     .join('&') + key
 
+  // 添加调试日志
+  console.log('[易支付签名] 参数:', filteredParams)
+  console.log('[易支付签名] 签名字符串:', signStr)
+  console.log('[易支付签名] 签名结果:', md5Hash(signStr))
+
   // 4. MD5签名（小写）
   return md5Hash(signStr)
 }
@@ -139,29 +144,22 @@ export const paymentTestService = {
       // 根据支付方式生成对应的支付链接
       switch (config.payment_method) {
         case 'alipay':
-          // 如果配置中有易支付信息，使用易支付接口
-          if ((config.config as Record<string, string>).api_url) {
-            paymentUrl = generateEpayUrl(config, amount, orderId)
-          } else {
-            paymentUrl = generateAlipayUrl(config, amount, orderId)
-          }
+          // 支付宝官方
+          paymentUrl = generateAlipayUrl(config, amount, orderId)
           break
+
         case 'wxpay':
-        case 'qqpay':
-        case 'bank':
-        case 'jdpay':
-        case 'paypal':
-          // 这些都通过易支付接口
-          paymentUrl = generateEpayUrl(config, amount, orderId)
-          break
-        case 'epay':
-          paymentUrl = generateEpayUrl(config, amount, orderId)
-          break
-        case 'stripe':
+          // 微信官方 (暂不支持前端测试)
           return {
             success: false,
-            message: 'Stripe支付暂不支持前端测试，请使用后端API',
+            message: '微信官方支付暂不支持前端测试，请使用后端API',
           }
+
+        case 'epay':
+          // 易支付(支持多种渠道)
+          paymentUrl = generateEpayUrl(config, amount, orderId)
+          break
+
         default:
           return {
             success: false,

@@ -1,5 +1,5 @@
 import { Table, Button, Space, Tag, Modal } from 'antd'
-import { EditOutlined, DeleteOutlined, PlusOutlined, AlipayCircleOutlined, DollarOutlined, ExperimentOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, PlusOutlined, AlipayCircleOutlined, WechatOutlined, DollarOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { useState } from 'react'
 import { usePaymentConfigs, useDeletePaymentConfig } from '../../hooks/usePaymentConfigs'
 import { PAYMENT_METHOD_LABELS } from '../../config/constants'
@@ -45,8 +45,10 @@ export default function PaymentConfigList({ onEdit, onAdd }: PaymentConfigListPr
     switch (method) {
       case 'alipay':
         return <AlipayCircleOutlined style={{ fontSize: '20px', color: '#1677ff' }} />
+      case 'wxpay':
+        return <WechatOutlined style={{ fontSize: '20px', color: '#52c41a' }} />
       case 'epay':
-        return <DollarOutlined style={{ fontSize: '20px', color: '#52c41a' }} />
+        return <DollarOutlined style={{ fontSize: '20px', color: '#faad14' }} />
       default:
         return null
     }
@@ -74,6 +76,22 @@ export default function PaymentConfigList({ onEdit, onAdd }: PaymentConfigListPr
           <span>{PAYMENT_METHOD_LABELS[record.payment_method] || record.payment_method}</span>
         </Space>
       ),
+    },
+    {
+      title: '渠道类型',
+      key: 'channel_type',
+      width: 120,
+      render: (_: unknown, record: ConfigWithRelations) => {
+        if (record.payment_method === 'epay') {
+          const type = (record.config as Record<string, unknown>)?.type as string
+          const labels: Record<string, string> = {
+            alipay: '支付宝',
+            wxpay: '微信支付',
+          }
+          return <Tag color="blue">{labels[type] || type}</Tag>
+        }
+        return '-'
+      },
     },
     {
       title: '商户标识',

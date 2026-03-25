@@ -139,12 +139,36 @@ export interface MembershipPlan {
 export interface PaymentConfig {
   id: string
   application_id: string | null
-  payment_method: 'alipay' | 'wxpay' | 'qqpay' | 'bank' | 'jdpay' | 'paypal' | 'stripe' | 'manual' | 'epay'
+  payment_method: 'alipay' | 'wxpay' | 'epay'  // 只保留三种
   config: Record<string, unknown>
   is_active: boolean
   is_sandbox: boolean
   created_at: string
   updated_at: string
+}
+
+// 易支付配置
+export interface EpayConfig {
+  api_url: string
+  pid: string
+  key: string
+  type: 'alipay' | 'wxpay'
+}
+
+// 支付宝官方配置
+export interface AlipayConfig {
+  app_id: string
+  gateway: string
+  private_key: string
+  public_key: string
+}
+
+// 微信官方配置
+export interface WxpayConfig {
+  app_id: string
+  mch_id: string
+  api_key: string
+  trade_type: 'NATIVE' | 'JSAPI' | 'APP' | 'MWEB'
 }
 
 export interface AppVersion {

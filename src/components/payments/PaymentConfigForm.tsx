@@ -2,7 +2,7 @@ import { Modal, Form, Select, Input, Switch } from 'antd'
 import { useEffect } from 'react'
 import { useCreatePaymentConfig, useUpdatePaymentConfig } from '../../hooks/usePaymentConfigs'
 import { useApplications } from '../../hooks/useApplications'
-import { PAYMENT_METHOD, PAYMENT_METHOD_LABELS } from '../../config/constants'
+import { PAYMENT_METHOD } from '../../config/constants'
 import type { PaymentConfig, Application } from '../../types/database.types'
 
 const { Option } = Select
@@ -29,7 +29,7 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
 
         form.setFieldsValue({
           ...config,
-          // 如果是易支付渠道，设置 payment_method 为 epay，type 为实际的支付方式
+          // 易支付配置保持 payment_method='epay'
           payment_method: isEpayChannel ? PAYMENT_METHOD.EPAY : config.payment_method,
           // 将 JSONB config 字段展开
           app_id: config.config?.app_id || '',
@@ -40,7 +40,7 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
           api_url: config.config?.api_url || '',
           pid: config.config?.pid || '',
           key: config.config?.key || '',
-          type: isEpayChannel ? config.payment_method : (config.config?.type || 'alipay'),
+          type: config.config?.type || 'alipay',  // 从config.type读取
           // 微信支付相关字段
           mch_id: config.config?.mch_id || '',
           api_key: config.config?.api_key || '',
@@ -89,16 +89,10 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
         configJson.trade_type = values.trade_type || 'NATIVE'
       }
 
-      // 确定最终的支付方式
-      // 如果选择的是易支付，则根据支付类型来设置 payment_method
-      let finalPaymentMethod = values.payment_method
-      if (values.payment_method === PAYMENT_METHOD.EPAY && values.type) {
-        finalPaymentMethod = values.type
-      }
-
+      // 易支付统一使用 'epay' 作为 payment_method，type存储在config中
       const payload = {
         application_id: values.application_id,
-        payment_method: finalPaymentMethod,
+        payment_method: values.payment_method,
         config: configJson,
         is_active: values.is_active,
         is_sandbox: values.is_sandbox,
@@ -165,9 +159,9 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
           rules={[{ required: true, message: '请选择支付方式' }]}
         >
           <Select placeholder="选择支付方式">
-            <Option value={PAYMENT_METHOD.ALIPAY}>{PAYMENT_METHOD_LABELS[PAYMENT_METHOD.ALIPAY]}</Option>
-            <Option value={PAYMENT_METHOD.WXPAY}>{PAYMENT_METHOD_LABELS[PAYMENT_METHOD.WXPAY]}</Option>
-            <Option value={PAYMENT_METHOD.EPAY}>{PAYMENT_METHOD_LABELS[PAYMENT_METHOD.EPAY]}</Option>
+            <Option value={PAYMENT_METHOD.ALIPAY}>支付宝官方</Option>
+            <Option value={PAYMENT_METHOD.WXPAY}>微信支付官方</Option>
+            <Option value={PAYMENT_METHOD.EPAY}>易支付</Option>
           </Select>
         </Form.Item>
 
@@ -300,10 +294,6 @@ export default function PaymentConfigForm({ open, config, onClose }: PaymentConf
               <Select placeholder="选择支付类型">
                 <Option value="alipay">支付宝</Option>
                 <Option value="wxpay">微信支付</Option>
-                <Option value="qqpay">QQ钱包</Option>
-                <Option value="bank">网银支付</Option>
-                <Option value="jdpay">京东支付</Option>
-                <Option value="paypal">PayPal</Option>
               </Select>
             </Form.Item>
           </>

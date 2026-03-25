@@ -62,29 +62,28 @@ export const BILLING_INTERVAL_LABELS = {
   [BILLING_INTERVAL.LIFETIME]: '终身',
 }
 
-// 支付方式
+// 支付方式 - 只保留三种
 export const PAYMENT_METHOD = {
-  STRIPE: 'stripe',
-  ALIPAY: 'alipay',
-  WXPAY: 'wxpay',
-  QQPAY: 'qqpay',
-  BANK: 'bank',
-  JDPAY: 'jdpay',
-  PAYPAL: 'paypal',
-  MANUAL: 'manual',
-  EPAY: 'epay', // 易支付兼容接口（支持易支付、CodePay、VPay等）
+  ALIPAY: 'alipay',    // 支付宝官方
+  WXPAY: 'wxpay',      // 微信支付官方
+  EPAY: 'epay',        // 易支付
 } as const
 
 export const PAYMENT_METHOD_LABELS = {
-  [PAYMENT_METHOD.STRIPE]: 'Stripe',
-  [PAYMENT_METHOD.ALIPAY]: '支付宝',
-  [PAYMENT_METHOD.WXPAY]: '微信支付',
-  [PAYMENT_METHOD.QQPAY]: 'QQ钱包',
-  [PAYMENT_METHOD.BANK]: '网银支付',
-  [PAYMENT_METHOD.JDPAY]: '京东支付',
-  [PAYMENT_METHOD.PAYPAL]: 'PayPal',
-  [PAYMENT_METHOD.MANUAL]: '手动',
+  [PAYMENT_METHOD.ALIPAY]: '支付宝官方',
+  [PAYMENT_METHOD.WXPAY]: '微信支付官方',
   [PAYMENT_METHOD.EPAY]: '易支付',
+}
+
+// 易支付支持的渠道类型
+export const EPAY_CHANNEL_TYPES = {
+  ALIPAY: 'alipay',
+  WXPAY: 'wxpay',
+} as const
+
+export const EPAY_CHANNEL_TYPE_LABELS = {
+  [EPAY_CHANNEL_TYPES.ALIPAY]: '支付宝',
+  [EPAY_CHANNEL_TYPES.WXPAY]: '微信支付',
 }
 
 // 订阅状态
